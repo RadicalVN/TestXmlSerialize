@@ -36,7 +36,7 @@ namespace TestXmlSerialize
                 MessageBox.Show("Load data is erorr!" + "\n" + "Đóng chương trình sau đó kiểm tra lại data hoặc tiến trình load data");
                 
                 // Set default Data when (Data == null)
-                SetDefaultJob();
+                //SetDefaultJob();
             }
         }
 
@@ -89,14 +89,6 @@ namespace TestXmlSerialize
                         fs.Close();
 
                         // result.Tostring(); ==> ProjectName.PlanData
-                        try
-                        {
-                            sr.Deserialize(fs);
-                        }
-                        catch
-                        {
-                            MessageBox.Show("Không sao, lỗi này do kết nối với data đã được đóng sau khi load data!\nTắt MessageBox này và chạy tiếp chương trình.");
-                        }
                         MessageBox.Show("Đã load được data: " + result.ToString());
                         return result;
                     }
@@ -104,22 +96,33 @@ namespace TestXmlSerialize
                     {
                         fs.Close();
                         MessageBox.Show("Lỗi tại phương thức Deserialize, không chuyển được từ file XML sang PlanData\n" + sr.Deserialize(fs).ToString());
-                        return 0;
+                        return Data;
                     }
 
                 }
                 catch
                 {
                     fs.Close();
-                    MessageBox.Show("Tạo Object XmlSerializer bị lỗi!\nFile XML bị lỗi, có thể sai cú pháp!\nHoặc data đang rỗng\n\nHướng giải quyết: Bắt ngoại lệ sau đó mở form mới\nCảnh báo lỗi và cho phép người dùng chọn phương án giải quyết");
-                    return 0;
+
+                    // Khởi tạo và chạy Form xử lý khi dữ liệu hoàn toàn rỗng (formatted)
+                    frmHandlingDataIsNull fr = new frmHandlingDataIsNull(this.Data);
+                    // Ủy thác event
+                    fr.SetDefaultJob += Fr_SetDefaultJob;
+                    fr.ShowDialog();
+                    return Data;
                 }
             }
             catch
             {
                 MessageBox.Show("Không tạo được kết nối tới file xml");
-                return 0;
+                return Data;
             }
+        }
+
+        private void Fr_SetDefaultJob(object sender, EventArgs e)
+        {
+            SetDefaultJob();
+            //SerializeAllDataToXML(Data,filePath);
         }
 
         void SetDefaultJob()
